@@ -1,4 +1,4 @@
-package io.vertx.vertx_wiki;
+package io.vertx.whatIsMyApp;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;

@@ -1,4 +1,4 @@
-package io.vertx.vertx_wiki;
+package io.vertx.whatIsMyApp;
 
 import com.github.rjeschke.txtmark.Processor;
 import io.vertx.core.AbstractVerticle;
