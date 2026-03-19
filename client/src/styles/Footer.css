@@ -1,0 +1,10 @@
+.whatismyapp-footer {
+  background-color: forestgreen;
+  color: white;
+  font-size: 5px;
+  text-align: center;
+  padding: 10px;
+  bottom: 0;
+  width: 100vh;
+  height: 5%;
+}
