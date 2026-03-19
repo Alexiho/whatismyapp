@@ -6,6 +6,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 
 import java.util.HashMap;
@@ -14,6 +15,9 @@ import java.util.HashMap;
 public interface DatabaseService {
   @Fluent
   DatabaseService fetchLastMessages(Handler<AsyncResult<JsonArray>> resultHandler);
+
+  @Fluent
+  DatabaseService fetchMessage(String messageId, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @Fluent
   DatabaseService addMessage(String author, String content, Handler<AsyncResult<Void>> resultHandler);

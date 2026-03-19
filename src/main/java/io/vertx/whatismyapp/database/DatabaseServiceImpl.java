@@ -6,10 +6,12 @@ import io.vertx.core.Handler;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLConnection;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class DatabaseServiceImpl implements DatabaseService {
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseServiceImpl.class);
@@ -37,13 +39,33 @@ public class DatabaseServiceImpl implements DatabaseService {
     });
   }
   @Override
-  public DatabaseService fetchLastMessages(Handler<AsyncResult<JsonArray>>
-                                             resultHandler) {
+  public DatabaseService fetchLastMessages(Handler<AsyncResult<JsonArray>> resultHandler) {
     dbClient.query(sqlQueries.get(SqlQuery.GET_LAST_MESSAGES), res -> {
       if (res.succeeded()) {
         JsonArray messages = new JsonArray(res.result()
           .getResults());
         resultHandler.handle(Future.succeededFuture(messages));
+      } else {
+        LOGGER.error("Database query error", res.cause());
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public DatabaseService fetchMessage(String requestedMessageId, Handler<AsyncResult<JsonObject>> resultHandler) {
+    dbClient.queryWithParams(sqlQueries.get(SqlQuery.GET_MESSAGE), new JsonArray().add(requestedMessageId), res -> {
+      if (res.succeeded()) {
+        JsonObject response = new JsonObject();
+        List<JsonArray> results = res.result().getResults();
+        if (results.isEmpty()) {
+          response.put("found", false);
+        } else {
+          response.put("found", true);
+          response.put("message", results.getFirst());
+        }
+        resultHandler.handle(Future.succeededFuture(response));
       } else {
         LOGGER.error("Database query error", res.cause());
         resultHandler.handle(Future.failedFuture(res.cause()));

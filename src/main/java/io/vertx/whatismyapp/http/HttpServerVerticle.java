@@ -5,6 +5,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -28,6 +29,7 @@ public class HttpServerVerticle extends AbstractVerticle {
     Router router = Router.router(vertx);
     router.get("/").handler(this::indexHandler);
     router.get("/api/messages").handler(this::getLastMessagesHandler);
+    router.get("/api/message/:id").handler(this::getMessageHandler);
     router.post().handler(BodyHandler.create());
     router.post("/api/messages").handler(this::addMessageHandler);
 
@@ -67,6 +69,25 @@ public class HttpServerVerticle extends AbstractVerticle {
       if (reply.succeeded()) {
         context.put("messages", reply.result().getList());
         templateEngine.render(context.data(), "/templates/index.ftl", ar -> {
+          if (ar.succeeded()) {
+            context.response().putHeader("Content-Type", "text/html");
+            context.response().end(ar.result());
+          } else {
+            context.fail(ar.cause());
+          }
+        });
+      } else {
+        context.fail(reply.cause());
+      }
+    });
+  }
+
+  private void getMessageHandler(RoutingContext context) {
+    String requestedMessageId = context.request().getParam("id");
+    dbService.fetchMessage(requestedMessageId, reply -> {
+      if (reply.succeeded()) {
+        context.put("message", reply.result().getValue("message", new JsonArray()));
+        templateEngine.render(context.data(), "/templates/message.ftl", ar -> {
           if (ar.succeeded()) {
             context.response().putHeader("Content-Type", "text/html");
             context.response().end(ar.result());
