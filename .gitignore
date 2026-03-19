@@ -183,3 +183,13 @@ nbdist/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+### DB ###
+db
+
+### generated classes ###
+/src/main/generated/io/vertx/whatismyapp/database/DatabaseServiceVertxEBProxy.java
+/src/main/generated/io/vertx/whatismyapp/database/DatabaseServiceVertxProxyHandler.java
+
+### IntelliJ IDEA config ###
+.idea
