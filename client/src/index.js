@@ -5,7 +5,18 @@ import App from './components/App';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <App messageList={
+      [
+        {
+          message: "Hello, how are you?",
+          userName: "Me"
+        },
+        {
+          message: "I'm good, thanks! How about you?",
+          userName: "José"
+        }
+      ]
+    }/>
   </React.StrictMode>,
   document.getElementById("root")
 );

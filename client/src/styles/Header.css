@@ -4,5 +4,6 @@
   font-size: 30px;
   text-align: center;
   padding: 20px;
-  width: 100vh
+  width: auto;
+  height: auto;
 }
