@@ -1,0 +1,20 @@
+.whatismyapp-body {
+  background-color: antiquewhite;
+  border:  2px solid black;
+  font-size: 30px;
+  color : black;
+  width: auto;
+  height: 73vh;
+  overflow: scroll;
+  overflow-x : hidden;
+}
+
+.whatismyapp-message-history {
+  list-style-type: none;
+}
+
+p {
+  margin: 0;
+  padding: 10px;
+  width: 100vh;
+}
