@@ -101,7 +101,13 @@ server/.mvn/timing.properties
 
 # Vert.x
 .vertx/
-
+server/db
+server/file-uploads
+server/.mvn
+server/mvnw.cmd
+server/mvnw
+server/target
+server/src/main/generated
 ### Node / client ###
 # Dependencies
 client/node_modules/
