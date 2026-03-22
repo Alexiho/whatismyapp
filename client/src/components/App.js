@@ -3,12 +3,13 @@ import Header from './Header';
 import Body from './Body';
 import Footer from './Footer';
 
-function App({ messageList }) {
+function App() {
+
   return (
     <div className="App">
       <header className="App-header">
-        <Header />
-        <Body messageList={ messageList }/>
+        <Header/>
+        <Body/>
         <Footer/>
       </header>
     </div>
