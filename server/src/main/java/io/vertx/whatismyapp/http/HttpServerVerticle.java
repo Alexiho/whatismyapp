@@ -214,7 +214,7 @@ public class HttpServerVerticle extends AbstractVerticle {
             vertx.eventBus().publish("messages", update);
 
             context.response().setStatusCode(204).end();
-            LOGGER.info("Message " + id + " deleted and clients notified.");
+            LOGGER.info("Message " + id + " deleted");
         } else {
             LOGGER.error("Failed to delete message", reply.cause());
             context.fail(reply.cause());

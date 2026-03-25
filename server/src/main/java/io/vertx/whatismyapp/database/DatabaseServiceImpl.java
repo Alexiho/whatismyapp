@@ -96,7 +96,7 @@ public class DatabaseServiceImpl implements DatabaseService {
       if (res.succeeded()) {
         resultHandler.handle(Future.succeededFuture());
       } else {
-        LOGGER.error("Database deletion error for id: " + id, res.cause());
+        LOGGER.error("Database query error", res.cause());
         resultHandler.handle(Future.failedFuture(res.cause()));
       }
     });
