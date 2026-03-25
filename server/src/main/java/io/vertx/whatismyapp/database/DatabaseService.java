@@ -22,6 +22,9 @@ public interface DatabaseService {
   @Fluent
   DatabaseService addMessage(String author, String content, Handler<AsyncResult<Void>> resultHandler);
 
+  @Fluent
+  DatabaseService deleteMessage(Integer id, Handler<AsyncResult<Void>> resultHandler);
+
   static DatabaseService create(JDBCClient dbClient, HashMap<SqlQuery, String> sqlQueries, Handler<AsyncResult<DatabaseService>> readyHandler) {
     return new DatabaseServiceImpl(dbClient, sqlQueries, readyHandler);
   }
