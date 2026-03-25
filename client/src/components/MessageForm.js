@@ -1,11 +1,7 @@
 import "../styles/MessageForm.css";
 import React, {useState, useEffect} from "react";
 
-async function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-const MessageForm = ({onNewMessage, connected}) => {
+const MessageForm = ({onNewMessage, connected, user}) => {
   const [text, setText] = useState('');
 
   const handleSubmit = (e) => {
@@ -13,8 +9,8 @@ const MessageForm = ({onNewMessage, connected}) => {
 
     if (!text) return;
     try {
-      console.log("Envoi du message : ", text);
-      onNewMessage("SockJSUser", text);
+      console.log("Envoi du message : ", text, "en tant que ", user);
+      onNewMessage(user, text);
       setText("");
       console.log("Message envoyé, attente de 500ms pour réinitialiser le formulaire");
     } catch (err) {

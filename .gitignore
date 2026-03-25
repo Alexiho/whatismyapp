@@ -22,7 +22,7 @@ Desktop.ini
 
 ### Editor / IDE ###
 # IntelliJ / JetBrains
-.idea/
+.idea
 *.iml
 *.iws
 *.ipr
@@ -40,6 +40,11 @@ modules.xml
 .idea/**/libraries
 .idea/**/mongoSettings.xml
 .idea/replstate.xml
+.idea/.gitignore
+.idea/checkstyle-idea.xml
+.idea/misc.xml
+.idea/vcs.xml
+.idea/whatismyapp.iml
 
 # VS Code
 .vscode/*

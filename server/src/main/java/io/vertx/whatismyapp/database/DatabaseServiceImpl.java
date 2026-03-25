@@ -17,6 +17,7 @@ public class DatabaseServiceImpl implements DatabaseService {
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseServiceImpl.class);
   private final HashMap<SqlQuery, String> sqlQueries;
   private final JDBCClient dbClient;
+
   public DatabaseServiceImpl(JDBCClient dbClient, HashMap<SqlQuery, String> sqlQueries, Handler<AsyncResult<DatabaseService>> readyHandler) {
     this.dbClient = dbClient;
     this.sqlQueries = sqlQueries;
@@ -38,12 +39,13 @@ public class DatabaseServiceImpl implements DatabaseService {
       }
     });
   }
+
   @Override
   public DatabaseService fetchLastMessages(Handler<AsyncResult<JsonArray>> resultHandler) {
     dbClient.query(sqlQueries.get(SqlQuery.GET_LAST_MESSAGES), res -> {
       if (res.succeeded()) {
         JsonArray messages = new JsonArray(res.result()
-          .getResults());
+          .getResults().reversed());
         resultHandler.handle(Future.succeededFuture(messages));
       } else {
         LOGGER.error("Database query error", res.cause());

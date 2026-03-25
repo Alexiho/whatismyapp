@@ -30,6 +30,7 @@ export default function useEventBus() {
 
   // helper pour normaliser un élément de message (cas tableau vs objet)
   const normalizeMessageItem = (item) => {
+    console.log('Normalizing message item:', item);
     if (!item) return null;
     // Si le serveur a stringifié l'élément
     if (typeof item === 'string') {
@@ -139,13 +140,14 @@ export default function useEventBus() {
   }, [messages]);
 
   useEffect(() => {
-    const url = 'http://localhost:8080/eventbus';
+    const url = 'http://10.106.163.109:8080/eventbus';
     const eb = new EventBus(url);
     ebRef.current = eb;
 
     // fonction utilitaire pour traiter un body candidat
     const processBodyCandidate = (bodyCandidate) => {
       let body = bodyCandidate;
+      console.log('Processing body candidate:', bodyCandidate);
       if (!body) { console.warn('processBodyCandidate: empty candidate', bodyCandidate); return; }
 
       if (typeof body === 'string') {
@@ -298,7 +300,8 @@ export default function useEventBus() {
     }
     console.log(ebRef.current);
     // envoyer sur la même adresse que le serveur consomme
-    ebRef.current.send('messages', {author, content});
+    console.log("Sending message via EventBus : ", {author, content});
+    ebRef.current.send('messages', {"author": author, "content":content});
 
   };
 

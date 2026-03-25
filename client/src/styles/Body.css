@@ -9,12 +9,38 @@
   overflow-x : hidden;
 }
 
+.whatismyapp-message-space {
+  width: 100%;
+  border: 2px solid black;
+  display:flex;
+  flex-direction: column;
+}
+
 .whatismyapp-message-history {
   list-style-type: none;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.whatismyapp-message {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.whatismyapp-my-messages {
+  justify-content: flex-end;
+  align-items: flex-start;
 }
 
 p {
   margin: 0;
   padding: 10px;
   width: 100vh;
+}
+
+.whatismyapp-gap {
+  height: 100px;
 }
