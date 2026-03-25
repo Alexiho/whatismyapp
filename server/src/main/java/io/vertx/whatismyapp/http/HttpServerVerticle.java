@@ -40,6 +40,7 @@ public class HttpServerVerticle extends AbstractVerticle {
     router.get("/api/message/:id").handler(this::getMessageHandler);
     router.post().handler(BodyHandler.create());
     router.post("/api/messages").handler(this::addMessageHandler);
+    router.delete("/api/message/:id").handler(this::deleteMessageHandler);
 
     SockJSBridgeOptions options = new SockJSBridgeOptions();
     options
@@ -199,4 +200,25 @@ public class HttpServerVerticle extends AbstractVerticle {
       }
     });
   }
+
+  private void deleteMessageHandler(RoutingContext context) {
+    String messageIdStr = context.request().getParam("id");
+    Integer id = Integer.valueOf(messageIdStr);
+
+    dbService.deleteMessage(id, reply -> {
+        if (reply.succeeded()) {
+            JsonObject update = new JsonObject()
+                .put("kind", "deleted")
+                .put("id", id);
+            
+            vertx.eventBus().publish("messages", update);
+
+            context.response().setStatusCode(204).end();
+            LOGGER.info("Message " + id + " deleted and clients notified.");
+        } else {
+            LOGGER.error("Failed to delete message", reply.cause());
+            context.fail(reply.cause());
+        }
+    });
+}
 }
