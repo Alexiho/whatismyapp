@@ -89,4 +89,17 @@ public class DatabaseServiceImpl implements DatabaseService {
     });
     return this;
   }
+
+  @Override
+  public DatabaseService deleteMessage(Integer id, Handler<AsyncResult<Void>> resultHandler) {
+    dbClient.updateWithParams(sqlQueries.get(SqlQuery.DELETE_MESSAGE), new JsonArray().add(id), res -> {
+      if (res.succeeded()) {
+        resultHandler.handle(Future.succeededFuture());
+      } else {
+        LOGGER.error("Database query error", res.cause());
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      }
+    });
+    return this;
+  }
 }
