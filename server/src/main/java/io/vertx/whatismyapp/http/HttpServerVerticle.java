@@ -166,17 +166,19 @@ public class HttpServerVerticle extends AbstractVerticle {
     }
 
     else if (event.type() == BridgeEventType.SEND || event.type() == BridgeEventType.PUBLISH) {
-      JsonObject rawMessage = event.getRawMessage().getJsonObject("body");
+      JsonObject rawMessage = event.getRawMessage();
+      String messageType = rawMessage.getString("type", "unknown");
       LOGGER.info("Handling SEND/PUBLISH event with raw message: " + rawMessage);
-      if (rawMessage.getString("type").equals("rec")) onSocketPublish(event);
-      else if (rawMessage.getString("type").equals("update")) onSocketUpdate(event);
-      else if (rawMessage.getString("type").equals("delete")) LOGGER.info("Delete event received, but delete handling is not implemented yet.");
+      if (messageType.equals("rec") || messageType.equals("send") || messageType.equals("publish")) onSocketPublish(event);
+      else if (messageType.equals("update")) onSocketUpdate(event);
+      else if (messageType.equals("delete")) onSocketDelete(event);
       return;
     }
-
-    // By default allow the bridge event to proceed
-    LOGGER.info("Default bridge event completion (true) for event: " + event.type());
-    event.complete(true);
+    else {
+      // By default allow the bridge event to proceed
+      LOGGER.info("Default bridge event completion (true) for event: " + event.type());
+      event.complete(true);
+    }
   }
 
   private void indexHandler(RoutingContext context) {
