@@ -26,7 +26,7 @@ Desktop.ini
 *.iml
 *.iws
 *.ipr
-modules.xml
+modules.xml:
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/**/dataSources/

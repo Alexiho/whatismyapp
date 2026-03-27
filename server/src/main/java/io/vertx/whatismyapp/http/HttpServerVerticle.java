@@ -68,75 +68,118 @@ public class HttpServerVerticle extends AbstractVerticle {
     });
   }
 
+  private void onSocketCreated(BridgeEvent event) {
+    LOGGER.info("Socket created: " + event.socket().writeHandlerID());
+    event.complete(true);
+  }
+
+  private void onSocketRegister(BridgeEvent event) {
+    String address = event.getRawMessage().getString("address");
+    if ("messages".equals(address)) {
+      // Allow the registration first
+      event.complete(true);
+      LOGGER.info("Allowed REGISTER on 'messages' for socket " + event.socket().writeHandlerID());
+
+      dbService.fetchLastMessages(reply -> {
+        if (reply.succeeded()) {
+          JsonObject published = new JsonObject()
+            .put("kind", "last")
+            .put("messages", reply.result());
+          vertx.setTimer(20, id -> {
+            vertx.eventBus().publish("messages", published);
+            LOGGER.info("Last messages published to 'messages' address after REGISTER (socket: " + event.socket().writeHandlerID() + ")");
+          });
+        } else {
+          LOGGER.error("Failed to fetch last messages for registering client", reply.cause());
+        }
+      });
+      return;
+    }
+  }
+
+  private void onSocketPublish(BridgeEvent event) {
+    LOGGER.info("Received message from SockJS client: " + event.getRawMessage());
+    // Traitement du message reçu de la part du client
+    JsonObject rawMessage = event.getRawMessage().getJsonObject("body");
+    String author = rawMessage.getString("author", "SockJSUser");
+    String content = rawMessage.getString("content", rawMessage.encode());
+
+    JsonObject payload = new JsonObject()
+      .put("author", author)
+      .put("content", content);
+    dbService.addMessage(author, content, reply -> {
+      if (reply.succeeded()) {
+        LOGGER.info("Message added to the database successfully");
+        // Création du message à publier pour tous les clients connectés
+        JsonObject published = new JsonObject()
+          .put("kind", "new")
+          .put("message", payload);
+        // Publication du message sur l'adresse client
+        vertx.eventBus().publish("messages", published);
+        LOGGER.info("Completing SEND/PUBLISH event as allowed (true)");
+        event.complete(true);
+
+      } else {
+        LOGGER.error("Failed to add message to the database", reply.cause());
+        LOGGER.info("Completing SEND/PUBLISH event as rejected (false)");
+        // reject the original send so it won't be forwarded
+        event.complete(false);
+      }
+    });
+  }
+
+  private void onSocketUpdate(BridgeEvent event) {
+    LOGGER.info("Received update message from SockJS client: " + event.getRawMessage());
+    // Traitement du message de mise à jour reçu de la part du client
+    JsonObject rawMessage = event.getRawMessage().getJsonObject("body");
+    String messageId = rawMessage.getString("id");
+    String newContent = rawMessage.getString("content");
+
+    // Log the update attempt
+    LOGGER.info("Attempting to update message with ID: " + messageId + " to new content: " + newContent);
+    event.complete(true); // Allow the update event to proceed for now, even though update handling is not implemented yet
+  }
+
+  private void onSocketDelete(BridgeEvent event) {
+    LOGGER.info("Received update message from SockJS client: " + event.getRawMessage());
+    // Traitement du message de mise à jour reçu de la part du client
+    JsonObject rawMessage = event.getRawMessage().getJsonObject("body");
+    String messageId = rawMessage.getString("id");
+    String newContent = rawMessage.getString("content");
+
+    // Log the update attempt
+    LOGGER.info("Attempting to update message with ID: " + messageId + " to new content: " + newContent);
+    event.complete(true); // Allow the update event to proceed for now, even though update handling is not implemented yet
+  }
+
   private void bridgeEventHandler(BridgeEvent event) {
     LOGGER.info("Received SockJS bridge event: " + event.type() + " from socket: " + event.socket().writeHandlerID());
     // Log raw message for debugging
     LOGGER.info("Bridge raw message: " + event.getRawMessage());
 
     if (event.type() == BridgeEventType.SOCKET_CREATED) {
-      // New socket created - allow it
-      LOGGER.info("Socket created: " + event.socket().writeHandlerID());
+      onSocketCreated(event);
+    }
+
+    else if (event.type() == BridgeEventType.REGISTER) {
+      onSocketRegister(event);
+      return;
+    }
+
+    else if (event.type() == BridgeEventType.SEND || event.type() == BridgeEventType.PUBLISH) {
+      JsonObject rawMessage = event.getRawMessage();
+      String messageType = rawMessage.getString("type", "unknown");
+      LOGGER.info("Handling SEND/PUBLISH event with raw message: " + rawMessage);
+      if (messageType.equals("rec") || messageType.equals("send") || messageType.equals("publish")) onSocketPublish(event);
+      else if (messageType.equals("update")) onSocketUpdate(event);
+      else if (messageType.equals("delete")) onSocketDelete(event);
+      return;
+    }
+    else {
+      // By default allow the bridge event to proceed
+      LOGGER.info("Default bridge event completion (true) for event: " + event.type());
       event.complete(true);
-      return;
     }
-
-    if (event.type() == BridgeEventType.REGISTER) {
-      String address = event.getRawMessage().getString("address");
-      if ("messages".equals(address)) {
-        // Allow the registration first
-        event.complete(true);
-        LOGGER.info("Allowed REGISTER on 'messages' for socket " + event.socket().writeHandlerID());
-
-        dbService.fetchLastMessages(reply -> {
-          if (reply.succeeded()) {
-            JsonObject published = new JsonObject()
-              .put("kind", "last")
-              .put("messages", reply.result());
-            vertx.setTimer(20, id -> {
-              vertx.eventBus().publish("messages", published);
-              LOGGER.info("Last messages published to 'messages' address after REGISTER (socket: " + event.socket().writeHandlerID() + ")");
-            });
-          } else {
-            LOGGER.error("Failed to fetch last messages for registering client", reply.cause());
-          }
-        });
-        return;
-      }
-    } else if (event.type() == BridgeEventType.SEND || event.type() == BridgeEventType.PUBLISH) {
-      LOGGER.info("Received message from SockJS client: " + event.getRawMessage());
-      // Traitement du message reçu de la part du client
-      JsonObject rawMessage = event.getRawMessage().getJsonObject("body");
-      String author = rawMessage.getString("author", "SockJSUser");
-      String content = rawMessage.getString("content", rawMessage.encode());
-
-      JsonObject payload = new JsonObject()
-        .put("author", author)
-        .put("content", content);
-      dbService.addMessage(author, content, reply -> {
-        if (reply.succeeded()) {
-          LOGGER.info("Message added to the database successfully");
-          // Création du message à publier pour tous les clients connectés
-          JsonObject published = new JsonObject()
-            .put("kind", "new")
-            .put("message", payload);
-          // Publication du message sur l'adresse client
-          vertx.eventBus().publish("messages", published);
-          LOGGER.info("Completing SEND/PUBLISH event as allowed (true)");
-          event.complete(true);
-
-        } else {
-          LOGGER.error("Failed to add message to the database", reply.cause());
-          LOGGER.info("Completing SEND/PUBLISH event as rejected (false)");
-          // reject the original send so it won't be forwarded
-          event.complete(false);
-        }
-      });
-      return;
-    }
-
-    // By default allow the bridge event to proceed
-    LOGGER.info("Default bridge event completion (true) for event: " + event.type());
-    event.complete(true);
   }
 
   private void indexHandler(RoutingContext context) {

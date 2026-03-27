@@ -140,7 +140,7 @@ export default function useEventBus() {
   }, [messages]);
 
   useEffect(() => {
-    const url = 'http://10.106.163.109:8080/eventbus';
+    const url = 'http://localhost:8080/eventbus';
     const eb = new EventBus(url);
     ebRef.current = eb;
 
