@@ -21,7 +21,7 @@ const Body = () => {
                 const messageClass = user === myName ? "whatismyapp-my-messages" : "whatismyapp-their-messages";
                 console.log("Rendering message from ", user, " with content : ", msg, " with class : ", messageClass);
                 return (
-                  <li className={" whatismyapp-message " + messageClass } key={key}><MessageItem message={msg} userName={user}/></li>
+                  <li className={"whatismyapp-message " + messageClass } key={key}><MessageItem message={msg} userName={user} myName={myName} id={key}/></li>
                 );
 
               }

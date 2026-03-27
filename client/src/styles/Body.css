@@ -1,17 +1,14 @@
 .whatismyapp-body {
   background-color: antiquewhite;
-  border:  2px solid black;
   font-size: 30px;
   color : black;
   width: auto;
   height: 73vh;
   overflow: scroll;
-  overflow-x : hidden;
 }
 
 .whatismyapp-message-space {
   width: 100%;
-  border: 2px solid black;
   display:flex;
   flex-direction: column;
 }
@@ -26,6 +23,9 @@
 .whatismyapp-message {
   display: flex;
   flex-direction: row;
+}
+
+.whatismyapp-their-messages {
   justify-content: flex-start;
   align-items: flex-start;
 }
@@ -33,6 +33,28 @@
 .whatismyapp-my-messages {
   justify-content: flex-end;
   align-items: flex-start;
+}
+
+.whatismyapp-my-messages .whatismyapp-message-item {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  justify-content: right;
+}
+
+.whatismyapp-their-messages .whatismyapp-message-item {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: left;
+}
+
+.whatismyapp-my-messages .whatismyapp-message-info {
+  justify-content: flex-end;
+}
+
+.whatismyapp-their-messages .whatismyapp-message-info {
+  justify-content: flex-start;
 }
 
 p {
