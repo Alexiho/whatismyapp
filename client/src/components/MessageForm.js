@@ -20,8 +20,16 @@ const MessageForm = ({onNewMessage, connected, user}) => {
   return (
     <div className="whatismyapp-message-form">
       <form id="whatismyapp-message-form-form" onSubmit={handleSubmit}>
-        <textarea wrap="soft" placeholder="Type your message here..."
-                  onChange={e => setText(e.target.value)} value={text}></textarea>
+        <textarea
+          wrap="soft"
+          placeholder="Type your message here..."
+          onChange={e => setText(e.target.value)}
+          value={text}
+          onKeyDown={(event) => {
+            if (event.ctrlKey && event.key === 'Enter') {
+              handleSubmit(event);
+            }
+          }}> < /textarea>
         <button type="submit" className="btn btn-primary" disabled={!connected}>Send</button>
       </form>
     </div>
