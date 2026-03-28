@@ -77,11 +77,27 @@ public class DatabaseServiceImpl implements DatabaseService {
   }
 
   @Override
-  public DatabaseService addMessage(String author, String content, Handler<AsyncResult<Void>> resultHandler) {
+  public DatabaseService addMessage(String author, String content, Handler<AsyncResult<JsonObject>> resultHandler) {
     JsonArray data = new JsonArray().add(author).add(content);
     dbClient.updateWithParams(sqlQueries.get(SqlQuery.ADD_MESSAGE), data, res -> {
       if (res.succeeded()) {
-        resultHandler.handle(Future.succeededFuture());
+        dbClient.query(sqlQueries.get(SqlQuery.GET_LAST_MESSAGES), get -> {
+          if (get.succeeded()) {
+            LOGGER.info("------------------------------------------------------------------------------------------------------");
+            LOGGER.info(get.result().getResults().toString());
+            JsonObject response = new JsonObject();
+            List<JsonArray> results = get.result().getResults();
+            if (results.isEmpty()) {
+              resultHandler.handle(Future.failedFuture("No messages found after publishing"));
+            } else {
+              response.put("message", results.getFirst());
+              resultHandler.handle(Future.succeededFuture(response));
+            }
+          } else {
+            LOGGER.error("Database query error", res.cause());
+            resultHandler.handle(Future.failedFuture(res.cause()));
+          }
+        });
       } else {
         LOGGER.error("Database query error", res.cause());
         resultHandler.handle(Future.failedFuture(res.cause()));

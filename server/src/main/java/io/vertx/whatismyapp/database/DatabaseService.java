@@ -20,7 +20,7 @@ public interface DatabaseService {
   DatabaseService fetchMessage(String messageId, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @Fluent
-  DatabaseService addMessage(String author, String content, Handler<AsyncResult<Void>> resultHandler);
+  DatabaseService addMessage(String author, String content, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @Fluent
   DatabaseService deleteMessage(Integer id, Handler<AsyncResult<Void>> resultHandler);
