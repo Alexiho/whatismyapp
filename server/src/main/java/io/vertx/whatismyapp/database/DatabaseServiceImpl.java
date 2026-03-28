@@ -102,4 +102,18 @@ public class DatabaseServiceImpl implements DatabaseService {
     });
     return this;
   }
+
+  @Override
+  public DatabaseService putMessage(Integer id, String author, String content, Handler<AsyncResult<Void>> resultHandler) {
+    LOGGER.info("Update " + id + " " + author + " " + content);
+    dbClient.updateWithParams(sqlQueries.get(SqlQuery.PUT_MESSAGE), new JsonArray().add(content).add(id).add(author), res -> {
+      if (res.succeeded()) {
+        resultHandler.handle(Future.succeededFuture());
+      } else {
+        LOGGER.error("Database query error", res.cause());
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      }
+    });
+    return this;
+  }
 }
