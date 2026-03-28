@@ -24,7 +24,7 @@ const Body = () => {
   }
 
   return (
-    <div className="whatismyapp-body">
+    <div id="whatismyapp-body-container" className="whatismyapp-body">
       {myName === "" ?
         <UserNameForm onSubmit={setMyName}/>
         : <div>

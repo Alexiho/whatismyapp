@@ -13,6 +13,11 @@ const MessageForm = ({onNewMessage, updateMessage, connected, user}) => {
       onNewMessage(user, text);
       setText("");
       console.log("Message envoyé, attente de 500ms pour réinitialiser le formulaire");
+      const scrollable = document.getElementById("whatismyapp-body-container")
+      scrollable.scrollTo({
+        top: scrollable.scrollHeight,
+        behavior: "smooth"
+      })
     } catch (err) {
       console.error("Envoi impossible : ", err)
     }
