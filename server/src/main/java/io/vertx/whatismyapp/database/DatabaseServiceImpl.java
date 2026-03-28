@@ -77,11 +77,27 @@ public class DatabaseServiceImpl implements DatabaseService {
   }
 
   @Override
-  public DatabaseService addMessage(String author, String content, Handler<AsyncResult<Void>> resultHandler) {
+  public DatabaseService addMessage(String author, String content, Handler<AsyncResult<JsonObject>> resultHandler) {
     JsonArray data = new JsonArray().add(author).add(content);
     dbClient.updateWithParams(sqlQueries.get(SqlQuery.ADD_MESSAGE), data, res -> {
       if (res.succeeded()) {
-        resultHandler.handle(Future.succeededFuture());
+        dbClient.query(sqlQueries.get(SqlQuery.GET_LAST_MESSAGES), get -> {
+          if (get.succeeded()) {
+            LOGGER.info("------------------------------------------------------------------------------------------------------");
+            LOGGER.info(get.result().getResults().toString());
+            JsonObject response = new JsonObject();
+            List<JsonArray> results = get.result().getResults();
+            if (results.isEmpty()) {
+              resultHandler.handle(Future.failedFuture("No messages found after publishing"));
+            } else {
+              response.put("message", results.getFirst());
+              resultHandler.handle(Future.succeededFuture(response));
+            }
+          } else {
+            LOGGER.error("Database query error", res.cause());
+            resultHandler.handle(Future.failedFuture(res.cause()));
+          }
+        });
       } else {
         LOGGER.error("Database query error", res.cause());
         resultHandler.handle(Future.failedFuture(res.cause()));
@@ -93,6 +109,20 @@ public class DatabaseServiceImpl implements DatabaseService {
   @Override
   public DatabaseService deleteMessage(Integer id, Handler<AsyncResult<Void>> resultHandler) {
     dbClient.updateWithParams(sqlQueries.get(SqlQuery.DELETE_MESSAGE), new JsonArray().add(id), res -> {
+      if (res.succeeded()) {
+        resultHandler.handle(Future.succeededFuture());
+      } else {
+        LOGGER.error("Database query error", res.cause());
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public DatabaseService putMessage(Integer id, String author, String content, Handler<AsyncResult<Void>> resultHandler) {
+    LOGGER.info("Update " + id + " " + author + " " + content);
+    dbClient.updateWithParams(sqlQueries.get(SqlQuery.PUT_MESSAGE), new JsonArray().add(content).add(id).add(author), res -> {
       if (res.succeeded()) {
         resultHandler.handle(Future.succeededFuture());
       } else {

@@ -39,7 +39,7 @@ export default function useEventBus() {
         return normalizeMessageItem(parsed);
       } catch (e) {
         // si ce n'est pas du JSON, utiliser tel quel comme content
-        return { id: null, author: null, date: null, content: item };
+        return { id: null, author: null, date: null, time: null, content: item };
       }
     }
 
@@ -49,7 +49,8 @@ export default function useEventBus() {
       const id = typeof item[0] !== 'undefined' ? item[0] : null;
       const author = typeof item[1] !== 'undefined' ? item[1] : null;
       const date = typeof item[2] !== 'undefined' ? item[2] : null;
-      let content = typeof item[3] !== 'undefined' ? item[3] : null;
+      const time = typeof item[3] !== 'undefined' ? item[3] : null;
+      let content = typeof item[4] !== 'undefined' ? item[4] : null;
       if (typeof content === 'string') {
         // tenter de parser si c'est un JSON stringifié
         try { content = JSON.parse(content); } catch (e) { /* keep string */ }
@@ -58,7 +59,7 @@ export default function useEventBus() {
       if (content && typeof content !== 'string') {
         try { content = String(content); } catch (e) { content = JSON.stringify(content); }
       }
-      return { id, author, date, content };
+      return { id, author, date, time, content };
     }
     if (typeof item === 'object') {
       // si déjà un objet, tenter de normaliser les noms
@@ -70,6 +71,7 @@ export default function useEventBus() {
         id: item.id ?? item._id ?? null,
         author: item.author ?? item.from ?? item.userName ?? null,
         date: item.date ?? item.timestamp ?? null,
+        time: item.time ?? null,
         content: content
       };
     }
@@ -170,6 +172,8 @@ export default function useEventBus() {
         const uiMessages = normalized.map(n => ({
           id: n.id ?? null,
           userName: n.author ?? 'Unknown',
+          date: n.date ?? '',
+          time: n.time ?? '',
           message: n.content ?? ''
         }));
         // Remplacer via helper pour reconstruire le set de déduplication
@@ -182,10 +186,15 @@ export default function useEventBus() {
         const uiNew = {
           id: normalizedNew?.id ?? null,
           userName: normalizedNew?.author ?? 'Unknown',
+          date: normalizedNew?.date ?? '',
+          time: normalizedNew?.time ?? '',
           message: normalizedNew?.content ?? ''
         };
         appendUiMessageIfNew(uiNew);
         return;
+      }
+      if (body && body.kind === 'new' && body.id) {
+        console.log('Deleting message:', body.id)
       }
       console.debug('processBodyCandidate: unknown structure', body);
     };
@@ -301,9 +310,29 @@ export default function useEventBus() {
     console.log(ebRef.current);
     // envoyer sur la même adresse que le serveur consomme
     console.log("Sending message via EventBus : ", {author, content});
-    ebRef.current.send('messages', {"author": author, "content":content});
+    ebRef.current.send('new', {"author": author, "content":content});
 
   };
 
-  return {connected, messages, sendMessage};
+  const deleteMessage = (id) => {
+    if (!ebRef.current || !connected) {
+      console.warn('EventBus not connected : ', id, ebRef.current);
+      return;
+    }
+    console.log(ebRef.current);
+    console.log("Deleting message via EventBus : ", id)
+    ebRef.current.send('delete', {"id": id})
+  }
+
+  const updateMessage = (id, author, content) => {
+    if (!ebRef.current || !connected) {
+      console.warn('EventBus not connected : ', ebRef.current);
+      return;
+    }
+    console.log(ebRef.current);
+    console.log("Updating message via EventBus : ", id, author, content)
+    ebRef.current.send('update', {"id": id, "author": author, "content": content})
+  }
+
+  return {connected, messages, sendMessage, deleteMessage, updateMessage};
 }

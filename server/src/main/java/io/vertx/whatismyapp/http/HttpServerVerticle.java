@@ -2,7 +2,6 @@ package io.vertx.whatismyapp.http;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -45,6 +44,7 @@ public class HttpServerVerticle extends AbstractVerticle {
     SockJSBridgeOptions options = new SockJSBridgeOptions();
     options
       .addInboundPermitted(new PermittedOptions().setAddress("messages"))
+      .addInboundPermitted(new PermittedOptions().setAddress("new"))
       .addOutboundPermitted(new PermittedOptions().setAddressRegex(".*"));
     SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
 
@@ -104,12 +104,10 @@ public class HttpServerVerticle extends AbstractVerticle {
     String author = rawMessage.getString("author", "SockJSUser");
     String content = rawMessage.getString("content", rawMessage.encode());
 
-    JsonObject payload = new JsonObject()
-      .put("author", author)
-      .put("content", content);
     dbService.addMessage(author, content, reply -> {
       if (reply.succeeded()) {
         LOGGER.info("Message added to the database successfully");
+        JsonArray payload = reply.result().getJsonArray("message");
         // Création du message à publier pour tous les clients connectés
         JsonObject published = new JsonObject()
           .put("kind", "new")
@@ -132,24 +130,60 @@ public class HttpServerVerticle extends AbstractVerticle {
     LOGGER.info("Received update message from SockJS client: " + event.getRawMessage());
     // Traitement du message de mise à jour reçu de la part du client
     JsonObject rawMessage = event.getRawMessage().getJsonObject("body");
-    String messageId = rawMessage.getString("id");
-    String newContent = rawMessage.getString("content");
+    Integer messageId = rawMessage.getInteger("id");
+    String author = rawMessage.getString("author", "SockJSUser");
+    String newContent = rawMessage.getString("content", rawMessage.encode());
 
-    // Log the update attempt
-    LOGGER.info("Attempting to update message with ID: " + messageId + " to new content: " + newContent);
-    event.complete(true); // Allow the update event to proceed for now, even though update handling is not implemented yet
+    dbService.putMessage(messageId, author, newContent, updateReply -> {
+      if (updateReply.succeeded()) {
+        LOGGER.info("Message updated successfully");
+        dbService.fetchLastMessages(fetchReply -> {
+          if (fetchReply.succeeded()) {
+            JsonObject published = new JsonObject()
+              .put("kind", "last")
+              .put("messages", fetchReply.result());
+            vertx.setTimer(20, id -> {
+              vertx.eventBus().publish("messages", published);
+              LOGGER.info("Last messages published to 'messages' address after UPDATE (socket: " + event.socket().writeHandlerID() + ")");
+            });
+          } else {
+            LOGGER.error("Failed to fetch last messages after update", fetchReply.cause());
+          }
+        });
+      } else {
+        LOGGER.error("Failed to update message", updateReply.cause());
+        event.complete(false);
+      }
+    });
   }
 
   private void onSocketDelete(BridgeEvent event) {
-    LOGGER.info("Received update message from SockJS client: " + event.getRawMessage());
+    LOGGER.info("Received delete message from SockJS client: " + event.getRawMessage());
     // Traitement du message de mise à jour reçu de la part du client
     JsonObject rawMessage = event.getRawMessage().getJsonObject("body");
-    String messageId = rawMessage.getString("id");
-    String newContent = rawMessage.getString("content");
+    Integer messageId = rawMessage.getInteger("id");
 
-    // Log the update attempt
-    LOGGER.info("Attempting to update message with ID: " + messageId + " to new content: " + newContent);
-    event.complete(true); // Allow the update event to proceed for now, even though update handling is not implemented yet
+    dbService.deleteMessage(messageId, deleteReply -> {
+      if (deleteReply.succeeded()) {
+        LOGGER.info("Message deleted successfully");
+        dbService.fetchLastMessages(fetchReply -> {
+          if (fetchReply.succeeded()) {
+            JsonObject published = new JsonObject()
+              .put("kind", "last")
+              .put("messages", fetchReply.result());
+            vertx.setTimer(20, id -> {
+              vertx.eventBus().publish("messages", published);
+              LOGGER.info("Last messages published to 'messages' address after DELETE (socket: " + event.socket().writeHandlerID() + ")");
+            });
+          } else {
+            LOGGER.error("Failed to fetch last messages after delete", fetchReply.cause());
+          }
+        });
+      } else {
+        LOGGER.error("Failed to delete message", deleteReply.cause());
+        event.complete(false);
+      }
+    });
   }
 
   private void bridgeEventHandler(BridgeEvent event) {
@@ -168,11 +202,10 @@ public class HttpServerVerticle extends AbstractVerticle {
 
     else if (event.type() == BridgeEventType.SEND || event.type() == BridgeEventType.PUBLISH) {
       JsonObject rawMessage = event.getRawMessage();
-      String messageType = rawMessage.getString("type", "unknown");
-      LOGGER.info("Handling SEND/PUBLISH event with raw message: " + rawMessage);
-      if (messageType.equals("rec") || messageType.equals("send") || messageType.equals("publish")) onSocketPublish(event);
-      else if (messageType.equals("update")) onSocketUpdate(event);
-      else if (messageType.equals("delete")) onSocketDelete(event);
+      String messageAddress = rawMessage.getString("address", "unknown");
+      if (messageAddress.equals("new")) onSocketPublish(event);
+      else if (messageAddress.equals("update")) onSocketUpdate(event);
+      else if (messageAddress.equals("delete")) onSocketDelete(event);
       return;
     }
     else {
@@ -253,7 +286,7 @@ public class HttpServerVerticle extends AbstractVerticle {
             JsonObject update = new JsonObject()
                 .put("kind", "deleted")
                 .put("id", id);
-            
+
             vertx.eventBus().publish("messages", update);
 
             context.response().setStatusCode(204).end();
