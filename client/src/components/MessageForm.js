@@ -23,7 +23,6 @@ const MessageForm = ({onNewMessage, updateMessage, connected, user}) => {
 
     if (!text) return;
     try {
-      const textarea = document.getElementById("whatismyapp-message-form-form-textarea")
       const sendButton = document.getElementById("whatismyapp-message-form-form-button-send")
       const editButton = document.getElementById("whatismyapp-message-form-form-button-edit")
 

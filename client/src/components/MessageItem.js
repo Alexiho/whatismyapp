@@ -2,7 +2,7 @@ import "../styles/MessageItem.css";
 import MessageOptions from "./MessageOptions";
 
 
-const MessageItem = ({message, userName, myName, id, deleteMessage, updateMessageForm}) => {
+const MessageItem = ({message, userName, myName, id, date, time, deleteMessage, updateMessageForm}) => {
 
   const handleRightClick = (message, userName) => {
     console.log("Right click on message : ", message, " from user : ", userName);
@@ -36,6 +36,10 @@ const MessageItem = ({message, userName, myName, id, deleteMessage, updateMessag
           <div className={"whatismyapp-message-item-options"} hidden={true} id={"options-" + id}>
           <MessageOptions onDeleteMessage={deleteMessage} handleUpdateQuery={onUpdateQuery} id={id}/>
         </div>
+        </div>
+        <div className="whatismyapp-message-datetime">
+          <p>{date}</p>
+          <p>{time}</p>
         </div>
       </div>
     </div>
