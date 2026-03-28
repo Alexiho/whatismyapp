@@ -58,10 +58,23 @@
   justify-content: flex-start;
 }
 
+.whatismyapp-message-info-context {
+  max-width: inherit;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.whatismyapp-their-messages .whatismyapp-message-info-context {
+  align-items: flex-start;
+}
+
+.whatismyapp-my-messages .whatismyapp-message-info-context {
+  align-items: flex-end;
+}
+
 p {
   margin: 0;
   padding: 10px;
-  width: 100vh;
 }
 
 .whatismyapp-gap {
