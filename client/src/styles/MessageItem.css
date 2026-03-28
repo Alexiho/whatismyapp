@@ -3,6 +3,7 @@
   flex-direction: row-reverse;
   align-items: center;
   justify-content: left;
+  max-width: 75%;
 }
 
 
@@ -10,10 +11,22 @@
   display: flex;
   flex-direction: column;
   margin: 10px;
-  margin-right: 50px;
   padding: 10px;
-  max-width: 30%;
-  width: 25%;
+  max-width: 100%;
+}
+
+.whatismyapp-my-messages .whatismyapp-message-info {
+  align-items: flex-end;
+  margin-left: 50px;
+}
+
+.whatismyapp-their-messages .whatismyapp-message-info {
+  align-items: flex-start;
+  margin-right: 50px;
+}
+
+.whatismyapp-message-content {
+  max-width: inherit;
 }
 
 .whatismyapp-message-content p{
@@ -24,8 +37,8 @@
   background-color: #f9f9f9;
   color: #333;
   overflow-wrap: break-word;
+  max-width: inherit;
   width: fit-content;
-  max-width: 80%;
 }
 
 .whatismyapp-user-name {
@@ -34,9 +47,20 @@
   margin-bottom: 5px;
   color: #555;
   text-align:left;
+  max-width: inherit;
+  width: fit-content;
 }
 
+.whatismyapp-my-messages .whatismyapp-user-name {
+  text-align: right;
+}
 
+.whatismyapp-my-messages .whatismyapp-message-content {
+  text-align: right;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+}
 
 .whatismyapp-message-options {
   margin-top: 5px;

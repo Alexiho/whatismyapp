@@ -4,7 +4,7 @@
   color : black;
   width: auto;
   height: 73vh;
-  overflow: scroll;
+  overflow-y: scroll;
 }
 
 .whatismyapp-message-space {
@@ -17,7 +17,8 @@
   list-style-type: none;
   display: flex;
   flex-direction: column;
-  width: 100%;
+  max-width: 100%;
+  padding-right: 40px;
 }
 
 .whatismyapp-message {
@@ -65,4 +66,8 @@ p {
 
 .whatismyapp-gap {
   height: 100px;
+}
+
+.hidden {
+  display: none;
 }
