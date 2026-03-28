@@ -44,6 +44,7 @@ public class HttpServerVerticle extends AbstractVerticle {
     SockJSBridgeOptions options = new SockJSBridgeOptions();
     options
       .addInboundPermitted(new PermittedOptions().setAddress("messages"))
+      .addInboundPermitted(new PermittedOptions().setAddress("new"))
       .addOutboundPermitted(new PermittedOptions().setAddressRegex(".*"));
     SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
 
@@ -103,12 +104,10 @@ public class HttpServerVerticle extends AbstractVerticle {
     String author = rawMessage.getString("author", "SockJSUser");
     String content = rawMessage.getString("content", rawMessage.encode());
 
-    JsonObject payload = new JsonObject()
-      .put("author", author)
-      .put("content", content);
     dbService.addMessage(author, content, reply -> {
       if (reply.succeeded()) {
         LOGGER.info("Message added to the database successfully");
+        JsonArray payload = reply.result().getJsonArray("message");
         // Création du message à publier pour tous les clients connectés
         JsonObject published = new JsonObject()
           .put("kind", "new")
@@ -204,7 +203,7 @@ public class HttpServerVerticle extends AbstractVerticle {
     else if (event.type() == BridgeEventType.SEND || event.type() == BridgeEventType.PUBLISH) {
       JsonObject rawMessage = event.getRawMessage();
       String messageAddress = rawMessage.getString("address", "unknown");
-      if (messageAddress.equals("messages")) onSocketPublish(event);
+      if (messageAddress.equals("new")) onSocketPublish(event);
       else if (messageAddress.equals("update")) onSocketUpdate(event);
       else if (messageAddress.equals("delete")) onSocketDelete(event);
       return;
