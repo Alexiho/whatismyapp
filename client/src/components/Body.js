@@ -33,10 +33,12 @@ const Body = () => {
                 const msg = (messageItem && (messageItem.content ?? messageItem.message)) || '';
                 const user = (messageItem && (messageItem.author ?? messageItem.userName)) || 'Unknown';
                 const key = (messageItem && (messageItem.id ?? messageItem._id)) || index;
+                const date = (messageItem && (messageItem.date)) || "";
+                const time = (messageItem && (messageItem.time)) || "";
                 const messageClass = user === myName ? "whatismyapp-my-messages" : "whatismyapp-their-messages";
-                console.log("Rendering message from ", user, " with content : ", msg, " with class : ", messageClass);
+                console.log("Rendering message from ", user, " with date : ", date, " with content : ", msg, " with class : ", messageClass);
                 return (
-                  <li className={"whatismyapp-message " + messageClass } key={key}><MessageItem message={msg} userName={user} myName={myName} id={key} deleteMessage={deleteMessage} updateMessageForm={updateMessageForm}/></li>
+                  <li className={"whatismyapp-message " + messageClass } key={key}><MessageItem message={msg} userName={user} myName={myName} id={key} date={date} time={time} deleteMessage={deleteMessage} updateMessageForm={updateMessageForm}/></li>
                 );
 
               }
