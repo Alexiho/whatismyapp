@@ -187,6 +187,9 @@ export default function useEventBus() {
         appendUiMessageIfNew(uiNew);
         return;
       }
+      if (body && body.kind === 'new' && body.id) {
+        console.log('Deleting message:', body.id)
+      }
       console.debug('processBodyCandidate: unknown structure', body);
     };
 
@@ -305,5 +308,25 @@ export default function useEventBus() {
 
   };
 
-  return {connected, messages, sendMessage};
+  const deleteMessage = (id) => {
+    if (!ebRef.current || !connected) {
+      console.warn('EventBus not connected : ', id, ebRef.current);
+      return;
+    }
+    console.log(ebRef.current);
+    console.log("Deleting message via EventBus : ", id)
+    ebRef.current.send('delete', {"id": id})
+  }
+
+  const updateMessage = (id, author, content) => {
+    if (!ebRef.current || !connected) {
+      console.warn('EventBus not connected : ', ebRef.current);
+      return;
+    }
+    console.log(ebRef.current);
+    console.log("Updating message via EventBus : ", id, author, content)
+    ebRef.current.send('update', {"id": id, "author": author, "content": content})
+  }
+
+  return {connected, messages, sendMessage, deleteMessage, updateMessage};
 }
