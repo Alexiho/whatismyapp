@@ -1,4 +1,4 @@
-# Fullstack Application
+# WhatIsMyApp
 
 This repository contains both the client-side and server-side components of the application. The project is divided into two main directories: a React frontend and a Java-based API server.
 
