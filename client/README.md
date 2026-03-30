@@ -2,6 +2,12 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Initialization
+
+To run the commands in the following parts, you first should run the following one : 
+### `npm install`
+This will install all node dependencies needed to start the client server.
+
 ## Available Scripts
 
 In the project directory, you can run:
