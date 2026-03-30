@@ -11,20 +11,16 @@ const Body = () => {
 
   const updateMessageForm = (id, message) => {
     const textarea = document.getElementById("whatismyapp-message-form-form-textarea")
-    const sendButton = document.getElementById("whatismyapp-message-form-form-button-send")
-    const editButton = document.getElementById("whatismyapp-message-form-form-button-edit")
+    const submitButton = document.getElementById("whatismyapp-message-form-form-button")
 
     textarea.value = message
     textarea.innerHTML = message
-    sendButton.classList.add("hidden")
-    sendButton.disabled = true
-    editButton.value = id
-    editButton.classList.remove("hidden")
-    editButton.disabled = false
+    submitButton.value = id
+    submitButton.innerText = "Edit"
   }
 
   return (
-    <div className="whatismyapp-body">
+    <div id="whatismyapp-body-container" className="whatismyapp-body">
       {myName === "" ?
         <UserNameForm onSubmit={setMyName}/>
         : <div>
